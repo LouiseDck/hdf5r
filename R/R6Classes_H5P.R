@@ -469,6 +469,15 @@ H5P_DATASET_CREATE <- R6Class("H5P_DATASET_CREATE",
                                       }
                                       super$initialize(id)
                                   },
+                                  set_obj_track_times=function(track_times=TRUE) {
+                                   "This function implements the HDF5-API function H5Pset_obj_track_times. Please see the documentation at \\url{https://support.hdfgroup.org/documentation/hdf5/latest/group___h5_p.html} for details."
+
+                                   herr <- .Call("R_H5Pset_obj_track_times", self$id, track_times, PACKAGE="hdf5r")$return_val
+                                   if(herr < 0) {
+                                       stop("Error setting track_times")
+                                   }
+                                   return(invisible(self))
+                                  },
                                   set_layout=function(layout=h5const$H5D_CHUNKED) {
                                       "This function implements the HDF5-API function H5Pset_layout."
                                       "Please see the documentation at \\url{https://support.hdfgroup.org/documentation/hdf5/latest/group___h5_p.html} for details."
