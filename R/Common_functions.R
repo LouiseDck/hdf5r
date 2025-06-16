@@ -304,11 +304,14 @@ commonFG <- list(
         check_pl(group_create_pl, "H5P_GROUP_CREATE")
         check_pl(group_access_pl, "H5P_GROUP_ACCESS")
 
+        # print(group_create_pl$get_link_creation_order())
+
         if(length(name)==0) { ## create anonymous group
             id <- .Call("R_H5Gcreate_anon", self$id, group_create_pl$id, group_access_pl$id, PACKAGE = "hdf5r")$return_val
         }
         else {
-            id <- .Call("R_H5Gcreate2", self$id, name, group_create_pl$id, link_create_pl$id, group_access_pl$id, PACKAGE = "hdf5r")$return_val
+            # print("here")
+            id <- .Call("R_H5Gcreate2", self$id, name, link_create_pl$id, group_create_pl$id, group_access_pl$id, PACKAGE = "hdf5r")$return_val
         }
         if(id < 0) {
             stop("Error when creating group")
@@ -429,6 +432,8 @@ commonFG <- list(
         check_pl(link_create_pl, "H5P_LINK_CREATE")
         check_pl(dataset_create_pl, "H5P_DATASET_CREATE")
         check_pl(dataset_access_pl, "H5P_DATASET_ACCESS")
+
+        # print(dataset_create_pl$get_obj_track_times())
 
         if(is.character(name) && length(name)==1) {
             id <- .Call("R_H5Dcreate2", self$id, name, dtype$id, space$id, link_create_pl$id, dataset_create_pl$id,

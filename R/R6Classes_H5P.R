@@ -65,6 +65,9 @@ H5P_factory <- function(id) {
     else if(h5p_equal(cls_id, h5const$H5P_DATASET_XFER)) {
         obj <- H5P_DATASET_XFER$new(id=id)
     }
+    else if(h5p_equal(cls_id, h5const$H5P_GROUP_CREATE)) {
+        obj <- H5P_GROUP_CREATE$new(id=id)
+    }
     else if(h5p_equal(cls_id, h5const$H5P_LINK_CREATE)) {
         obj <- H5P_LINK_CREATE$new(id=id)
     }
@@ -359,6 +362,13 @@ H5P_FILE_CREATE <-  R6Class("H5P_FILE_CREATE",
                                       }
                                       return(res$ik)
                                   },
+                                    set_link_creation_order = function(track_creation_flags = 0) {
+                                    herr <- .Call("R_H5Pset_link_creation_order", self$id, track_creation_flags, PACKAGE="hdf5r")$return_val
+                                    if(herr < 0) {
+                                        stop("Error setting link_creation_order")
+                                    }
+                                    return(invisible(self))
+                                },
                                   set_file_space=function(strategy, threshold) {
                                       "This function implements the HDF5-API function H5Pset_file_space."
                                       "Please see the documentation at \\url{https://support.hdfgroup.org/documentation/hdf5/latest/group___h5_p.html} for details."
@@ -443,7 +453,41 @@ H5P_FILE_ACCESS <-  R6Class("H5P_FILE_ACCESS",
                               cloneable=FALSE
                               )
 
+#' @importFrom R6 R6Class
+#' @export
+H5P_GROUP_CREATE <- R6Class("H5P_GROUP_CREATE",
+                            inherit=H5P,
+                            public=list(
+                                initialize=function(id=NULL) {
+                                    "Create a new class of type \\code{\\link{H5P_GROUP_CREATE}}"
+                                    "@param id Internal use only"
 
+                                    if(is.null(id)) {
+                                        id <- .Call("R_H5Pcreate", h5const$H5P_GROUP_CREATE, PACKAGE="hdf5r")$return_val
+                                        if(id < 0) {
+                                            stop("Error creating new property list")
+                                        }
+                                    }
+                                    super$initialize(id)
+                                },
+                                set_link_creation_order = function(track_creation_flags = 0) {
+                                    herr <- .Call("R_H5Pset_link_creation_order", self$id, track_creation_flags, PACKAGE="hdf5r")$return_val
+                                    if(herr < 0) {
+                                        stop("Error setting link_creation_order")
+                                    }
+                                    return(invisible(self))
+                                },
+                                get_link_creation_order = function() {
+                                    res <- .Call("R_H5Pget_link_creation_order", self$id, request_empty(1), PACKAGE="hdf5r")
+                                    if(res$return_val < 0) {
+                                        stop("Error getting link_creation_order")
+                                    }
+                                    return(as.logical(res$track_creation))
+                                }
+                            ),
+
+                            cloneable=FALSE
+                            )
 
 #' Class for HDF5 property list for dataset creation
 #'
@@ -478,6 +522,16 @@ H5P_DATASET_CREATE <- R6Class("H5P_DATASET_CREATE",
                                    }
                                    return(invisible(self))
                                   },
+
+                                    get_obj_track_times=function() {
+                                        "This function implements the HDF5-API function H5Pget_obj_track_times. Please see the documentation at \\url{https://support.hdfgroup.org/documentation/hdf5/latest/group___h5_p.html} for details."
+
+                                        res <- .Call("R_H5Pget_obj_track_times", self$id, request_empty(1), PACKAGE="hdf5r")
+                                        if(res$return_val < 0) {
+                                            stop("Error getting track_times")
+                                        }
+                                        return(as.logical(res$track_times))
+                                    },
                                   set_layout=function(layout=h5const$H5D_CHUNKED) {
                                       "This function implements the HDF5-API function H5Pset_layout."
                                       "Please see the documentation at \\url{https://support.hdfgroup.org/documentation/hdf5/latest/group___h5_p.html} for details."
